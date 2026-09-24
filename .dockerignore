@@ -1,0 +1,15 @@
+.git
+.github
+.next
+node_modules
+dist
+coverage
+playwright-report
+test-results
+src/generated
+dados
+.env
+.env.*
+!.env.example
+deploy/.env
+*.log

@@ -1,0 +1,67 @@
+# Implantação no servidor interno da CMG (RNF08: acesso só pela rede interna).
+# Uso, a partir da pasta deploy/:
+#   cp .env.producao.example .env   # e preencher os segredos
+#   docker compose up -d --build
+# O Nginx corre no anfitrião (ver nginx/dsic-ops.conf) e encaminha para 127.0.0.1:3000.
+
+name: dsic-ops
+
+x-app-env: &app-env
+  DATABASE_URL: mysql://dsic_app:${MYSQL_APP_PASSWORD:?}@mysql:3306/${MYSQL_DATABASE:-dsic_ops}
+  APP_URL: ${APP_URL:?}
+  PASTA_ANEXOS: /var/lib/dsic-ops/anexos
+  LOG_LEVEL: ${LOG_LEVEL:-info}
+  CHAVE_CIFRA: ${CHAVE_CIFRA:-}
+
+services:
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_0900_ai_ci"]
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-dsic_ops}
+      MYSQL_APP_PASSWORD: ${MYSQL_APP_PASSWORD:?}
+      MYSQL_MIGRACOES_PASSWORD: ${MYSQL_MIGRACOES_PASSWORD:?}
+      TZ: UTC
+    volumes:
+      - mysql-dados:/var/lib/mysql
+      - ./mysql/01-utilizadores.sh:/docker-entrypoint-initdb.d/01-utilizadores.sh:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "--silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  migrate:
+    build: { context: .., dockerfile: deploy/Dockerfile, target: migrate }
+    environment:
+      DATABASE_URL_MIGRACOES: mysql://dsic_migracoes:${MYSQL_MIGRACOES_PASSWORD:?}@mysql:3306/${MYSQL_DATABASE:-dsic_ops}
+    depends_on:
+      mysql: { condition: service_healthy }
+    restart: "no"
+
+  app:
+    build: { context: .., dockerfile: deploy/Dockerfile, target: app }
+    restart: unless-stopped
+    environment: *app-env
+    ports:
+      - "127.0.0.1:3000:3000"
+    volumes:
+      - anexos:/var/lib/dsic-ops/anexos
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+
+  worker:
+    build: { context: .., dockerfile: deploy/Dockerfile, target: worker }
+    restart: unless-stopped
+    environment: *app-env
+    volumes:
+      - anexos:/var/lib/dsic-ops/anexos
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+
+volumes:
+  mysql-dados:
+  anexos:

@@ -1,0 +1,36 @@
+// Esquema da Plataforma de Gestão de Operações DSIC.
+//
+// Convenções (ver CLAUDE.md):
+// - Modelos e campos com nomes do domínio em português, sem acentos, em camelCase.
+// - Tabelas e colunas em snake_case através de @@map / @map.
+// - Datas em UTC com precisão de milissegundos (@db.DateTime(3)).
+// - Nunca apagar registos: desativar ou criar nova versão.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+/// Parâmetros configuráveis pelo administrador (RF31), guardados como JSON.
+model Parametro {
+  chave        String   @id @db.VarChar(100)
+  valor        Json
+  descricao    String?  @db.VarChar(500)
+  atualizadoEm DateTime @updatedAt @map("atualizado_em") @db.DateTime(3)
+
+  @@map("parametro")
+}
+
+/// Heartbeat do worker, lido pelo health check (RNF17).
+model EstadoWorker {
+  nome            String   @id @db.VarChar(100)
+  versao          String   @db.VarChar(50)
+  iniciadoEm      DateTime @map("iniciado_em") @db.DateTime(3)
+  ultimoHeartbeat DateTime @map("ultimo_heartbeat") @db.DateTime(3)
+
+  @@map("estado_worker")
+}
