@@ -24,8 +24,25 @@ const DEFINICOES = [
   },
 ];
 
+function lerEnv() {
+  const ficheiro = path.join(RAIZ, ".env");
+  return fs.existsSync(ficheiro) ? parseEnv(fs.readFileSync(ficheiro, "utf8")) : {};
+}
+
+// Node usado pelos serviços: o de NODE_HOME (Node próprio da plataforma) ou, sem ele, o que corre este script.
+const NODE_HOME = lerEnv().NODE_HOME;
+const EXEC_PATH = NODE_HOME ? path.join(NODE_HOME, "node.exe") : process.execPath;
+
 const servicos = DEFINICOES.map(
-  (d) => new Service({ ...d, workingDirectory: RAIZ, maxRestarts: 10, wait: 2, grow: 0.5 }),
+  (d) =>
+    new Service({
+      ...d,
+      execPath: EXEC_PATH,
+      workingDirectory: RAIZ,
+      maxRestarts: 10,
+      wait: 2,
+      grow: 0.5,
+    }),
 );
 
 /** Nome do serviço no Windows (o que se usa em "sc query" e "net start"). */
@@ -91,9 +108,7 @@ function iniciar(svc, segundos = 30) {
 }
 
 function porta() {
-  const ficheiro = path.join(RAIZ, ".env");
-  if (!fs.existsSync(ficheiro)) return "3000";
-  return parseEnv(fs.readFileSync(ficheiro, "utf8")).PORT || "3000";
+  return lerEnv().PORT || "3000";
 }
 
 /** Espera que o health check responda; devolve o URL da aplicação ou null. */

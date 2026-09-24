@@ -37,6 +37,16 @@ echo.
 
 REM A rede da Camara interfere com o SSL: git com o SSL do Windows, Node com os certificados do Windows
 git config http.sslBackend schannel >nul 2>&1
+REM Node proprio desta plataforma (NODE_HOME no .env), sem mexer no Node do sistema usado por outras aplicacoes
+if exist ".env" for /f "tokens=1,* delims==" %%a in ('findstr /b "NODE_HOME=" .env') do set "NODE_HOME=%%~b"
+if defined NODE_HOME (
+    if not exist "!NODE_HOME!\node.exe" (
+        echo ERRO: NODE_HOME=!NODE_HOME! no .env, mas nao existe node.exe nessa pasta. Ver deploy\instalar-node.ps1
+        goto :erro
+    )
+    set "PATH=!NODE_HOME!;!PATH!"
+)
+
 REM (so em versoes do Node que aceitam a opcao em NODE_OPTIONS; nas outras fica sem ela)
 set "NODE_OPTIONS=--use-system-ca"
 node -e "0" >nul 2>&1 || set "NODE_OPTIONS="
@@ -44,7 +54,8 @@ node -e "0" >nul 2>&1 || set "NODE_OPTIONS="
 for /f "tokens=1 delims=." %%v in ('node -p "process.versions.node"') do set "NODE_MAJOR=%%v"
 for /f %%v in ('node -v') do echo Node: %%v
 if !NODE_MAJOR! LSS 24 (
-    echo ERRO: a plataforma precisa do Node 24 LTS ou superior. Instale-o: winget install OpenJS.NodeJS.LTS
+    echo ERRO: a plataforma precisa do Node 24 ou superior. Para nao mexer no Node do sistema,
+    echo instale um Node proprio com deploy\instalar-node.ps1 e defina NODE_HOME no .env.
     goto :erro
 )
 
