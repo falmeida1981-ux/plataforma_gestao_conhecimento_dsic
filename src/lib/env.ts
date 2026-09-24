@@ -8,7 +8,8 @@ const esquemaEnv = z.object({
     .enum(["true", "false"])
     .default("false")
     .transform((valor) => valor === "true"),
-  APP_URL: z.url(),
+  // Endereço pelo qual os utilizadores acedem (ex.: http://10.0.0.5:3002). Obrigatório a partir do M6 (links nas notificações).
+  APP_URL: z.url().optional(),
   PASTA_ANEXOS: z.string().min(1),
   LOG_LEVEL: z.enum(["fatal", "error", "warn", "info", "debug", "trace"]).default("info"),
   // Obrigatória a partir do M2 (cifra de segredos em BD, RNF04).

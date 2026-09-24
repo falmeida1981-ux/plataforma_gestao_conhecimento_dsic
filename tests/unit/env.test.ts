@@ -30,6 +30,6 @@ describe("validarEnv", () => {
   });
 
   it("lista todas as variáveis em falta", () => {
-    expect(() => validarEnv({})).toThrow(/DATABASE_URL[\s\S]*APP_URL[\s\S]*PASTA_ANEXOS/);
+    expect(() => validarEnv({})).toThrow(/DATABASE_URL[\s\S]*PASTA_ANEXOS/);
   });
 });
