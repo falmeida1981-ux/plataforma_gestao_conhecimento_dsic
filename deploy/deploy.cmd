@@ -37,7 +37,17 @@ echo.
 
 REM A rede da Camara interfere com o SSL: git com o SSL do Windows, Node com os certificados do Windows
 git config http.sslBackend schannel >nul 2>&1
+REM (so em versoes do Node que aceitam a opcao em NODE_OPTIONS; nas outras fica sem ela)
 set "NODE_OPTIONS=--use-system-ca"
+node -e "0" >nul 2>&1 || set "NODE_OPTIONS="
+
+for /f "tokens=1 delims=." %%v in ('node -p "process.versions.node"') do set "NODE_MAJOR=%%v"
+echo Node:
+node -v
+if !NODE_MAJOR! LSS 24 (
+    echo ERRO: a plataforma precisa do Node 24 LTS ou superior. Instale-o: winget install OpenJS.NodeJS.LTS
+    goto :erro
+)
 
 net session >nul 2>&1 || (
     echo ERRO: correr como administrador ^(e preciso para parar e iniciar os servicos^).
