@@ -4,7 +4,7 @@
 #   docker build -f deploy/Dockerfile --target worker  -t dsic-ops-worker .
 #   docker build -f deploy/Dockerfile --target migrate -t dsic-ops-migrate .
 
-FROM node:24-alpine AS base
+FROM node:25-alpine AS base
 WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
 
