@@ -53,7 +53,7 @@ npm run test:e2e
 No servidor (PowerShell como administrador), uma vez:
 
 1. Instalar Node 24 LTS, Git e MySQL 8.4; no IIS, os módulos URL Rewrite e ARR (proxy HTTPS para `http://127.0.0.1:3000`).
-2. `git clone https://github.com/falmeida1981-ux/plataforma_gestao_conhecimento_dsic.git C:\dsic-ops`
+2. `git clone https://github.com/falmeida1981-ux/plataforma_gestao_conhecimento_dsic.git` (cria a pasta `plataforma_gestao_conhecimento_dsic`; o nome da pasta não importa para os scripts)
 3. Criar a base de dados `dsic_ops` e os utilizadores `dsic_app` e `dsic_migracoes` (adaptar `scripts/dev/criar-bd-dev.sql` com palavras-passe fortes).
 4. `copy .env.example .env` e preencher (URLs de produção, `CHAVE_CIFRA`, `BACKUP_PASTA` noutro disco).
 
