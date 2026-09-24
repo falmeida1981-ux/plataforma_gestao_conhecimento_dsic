@@ -55,3 +55,9 @@ next-env.d.ts
 
 # dados locais (anexos de desenvolvimento)
 /dados/
+
+# implantação no Windows Server
+/publicado/
+/publicado-anterior/
+/backups/
+/deploy/servico/daemon/

@@ -48,6 +48,28 @@ npx playwright install chromium   # uma vez
 npm run test:e2e
 ```
 
-## Implantação
+## Implantação (Windows Server 2022)
 
-Ver [deploy/](deploy/): `Dockerfile` com os alvos `app`, `worker` e `migrate`, `docker-compose.yml` com MySQL 8.4, e a configuração do Nginx com o certificado interno. Os segredos de produção ficam em `deploy/.env` (modelo em `deploy/.env.producao.example`).
+No servidor (PowerShell como administrador), uma vez:
+
+1. Instalar Node 24 LTS, Git e MySQL 8.4; no IIS, os módulos URL Rewrite e ARR (proxy HTTPS para `http://127.0.0.1:3000`).
+2. `git clone https://github.com/falmeida1981-ux/plataforma_gestao_conhecimento_dsic.git C:\dsic-ops`
+3. Criar a base de dados `dsic_ops` e os utilizadores `dsic_app` e `dsic_migracoes` (adaptar `scripts/dev/criar-bd-dev.sql` com palavras-passe fortes).
+4. `copy .env.example .env` e preencher (URLs de produção, `CHAVE_CIFRA`, `BACKUP_PASTA` noutro disco).
+
+Depois, a cada nova versão no GitHub (e também na primeira instalação):
+
+```
+deploy\deploy.cmd          (só atualiza se houver versão nova)
+deploy\deploy.cmd force    (reinstala mesmo sem alterações)
+```
+
+O deploy atualiza do GitHub → instala as dependências → valida o `.env` → compila → corre os testes →
+para os serviços → **faz a cópia de segurança** (BD + `.env` + versão anterior, em `BACKUP_PASTA`) →
+aplica as migrações → publica em `publicado\` (a versão anterior fica em `publicado-anterior\`) →
+inicia os serviços "Operacoes DSIC" e "Operacoes DSIC Worker" → confirma o `/api/health`.
+Se algo falhar antes da cópia de segurança, os serviços continuam com a versão anterior.
+
+Cópia de segurança manual: `node scripts\backup-bd.mjs manual`. Remover os serviços: `node deploy\uninstall-service.js`.
+
+A pasta `deploy/` inclui também uma alternativa com Docker Compose + Nginx, para servidores Linux.

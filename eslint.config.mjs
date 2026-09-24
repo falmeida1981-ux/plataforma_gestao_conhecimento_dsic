@@ -15,6 +15,9 @@ const eslintConfig = defineConfig([
     "playwright-report/**",
     "test-results/**",
     "coverage/**",
+    // scripts CommonJS dos serviços Windows (node-windows)
+    "deploy/**/*.js",
+    "deploy/**/*.cjs",
   ]),
 ]);
 
