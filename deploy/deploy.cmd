@@ -42,8 +42,7 @@ set "NODE_OPTIONS=--use-system-ca"
 node -e "0" >nul 2>&1 || set "NODE_OPTIONS="
 
 for /f "tokens=1 delims=." %%v in ('node -p "process.versions.node"') do set "NODE_MAJOR=%%v"
-echo Node:
-node -v
+for /f %%v in ('node -v') do echo Node: %%v
 if !NODE_MAJOR! LSS 24 (
     echo ERRO: a plataforma precisa do Node 24 LTS ou superior. Instale-o: winget install OpenJS.NodeJS.LTS
     goto :erro
